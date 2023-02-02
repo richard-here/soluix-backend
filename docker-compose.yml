@@ -1,0 +1,15 @@
+version: "3.7"
+services:
+  postgres:
+    image: postgres:13
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    env_file:
+      - .env
+    volumes:
+      - ./initdb.d:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
