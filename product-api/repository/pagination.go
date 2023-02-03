@@ -15,6 +15,13 @@ type Pagination struct {
 	Rows       interface{} `json:"rows"`
 }
 
+func (p *Pagination) fillDefault() {
+	p.GetLimit()
+	p.GetOffset()
+	p.GetPage()
+	p.GetSort()
+}
+
 func (p *Pagination) GetOffset() int {
 	return (p.GetPage() - 1) * p.GetLimit()
 }
@@ -44,6 +51,7 @@ func paginate(value interface{}, pagination *Pagination, db *gorm.DB) func(db *g
 	var totalRows int64
 	db.Model(value).Count(&totalRows)
 
+	pagination.fillDefault()
 	pagination.TotalRows = totalRows
 	totalPages := int(math.Ceil(float64(totalRows) / float64(pagination.Limit)))
 	pagination.TotalPages = totalPages

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"richard-here/soluix/product-api/config"
+	model "richard-here/soluix/product-api/model/local"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -37,6 +38,7 @@ func Connect() {
 
 	log.Println("Connected")
 	db.Logger = logger.Default.LogMode(logger.Info)
+	db.AutoMigrate(&model.Product{})
 	DB = DBInstance{
 		Db: db,
 	}

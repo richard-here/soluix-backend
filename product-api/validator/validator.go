@@ -1,7 +1,7 @@
 package validator
 
 import (
-	"richard-here/soluix/product-api/model"
+	networkmodel "richard-here/soluix/product-api/model/network"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -14,9 +14,39 @@ type ErrorResponse struct {
 
 var validate = validator.New()
 
-func ValidateProduct(p model.Product) []*ErrorResponse {
+func ValidateAddBody(p networkmodel.AddBody) []*ErrorResponse {
 	var errors []*ErrorResponse
 	err := validate.Struct(p)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element ErrorResponse
+			element.FailedField = err.StructNamespace()
+			element.Tag = err.Tag()
+			element.Value = err.Param()
+			errors = append(errors, &element)
+		}
+	}
+	return errors
+}
+
+func ValidateUpdateBody(ub networkmodel.UpdateBody) []*ErrorResponse {
+	var errors []*ErrorResponse
+	err := validate.Struct(ub)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element ErrorResponse
+			element.FailedField = err.StructNamespace()
+			element.Tag = err.Tag()
+			element.Value = err.Param()
+			errors = append(errors, &element)
+		}
+	}
+	return errors
+}
+
+func ValidateGetQueries(gq networkmodel.GetQueries) []*ErrorResponse {
+	var errors []*ErrorResponse
+	err := validate.Struct(gq)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
 			var element ErrorResponse

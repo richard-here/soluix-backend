@@ -87,7 +87,6 @@ BEGIN
         WHEN rand3 = 4 THEN 'Xiaomi'
         ELSE 'Samsung'
       END) INTO brand;
-    brand := 'brand ';
     retail_price := RANDBETWEEN(100000, 50000000, random()::NUMERIC);
     status := (i % 2) = 0;
 
