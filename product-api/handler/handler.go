@@ -29,23 +29,47 @@ func (h *Handler) GetProductsHandler(c *fiber.Ctx) error {
 
 	lq, err := strconv.Atoi(c.Query("limit", "20"))
 	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
 			"message": err.Error(),
 		})
 	}
 	pq, err := strconv.Atoi(c.Query("page", "1"))
 	if err != nil {
-		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
 			"message": err.Error(),
 		})
 	}
+	nq := c.Query("name", "")
+	scq := c.Query("subcategory", "")
+	bq := c.Query("brand", "")
+	minpq, err := strconv.Atoi(c.Query("minprice", "0"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": err.Error(),
+		})
+	}
+	maxpq, err := strconv.Atoi(c.Query("maxprice", "0"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": err.Error(),
+		})
+	}
+	boolq := c.Query("status", "")
 
 	qs := new(networkmodel.GetQueries)
 	qs.Limit = lq
 	qs.Page = pq
 	qs.Sort = url.QueryEscape(c.Query("sort", "id desc"))
+	qs.Name = nq
+	qs.Subcategory = scq
+	qs.Brand = bq
+	qs.MinPrice = minpq
+	qs.MaxPrice = maxpq
+	qs.Status = boolq
 
 	errs := validate.ValidateGetQueries(*qs)
 	log.Println(errs)
@@ -60,7 +84,7 @@ func (h *Handler) GetProductsHandler(c *fiber.Ctx) error {
 	p.Page = qs.Page
 	p.Sort, _ = url.QueryUnescape(qs.Sort)
 
-	pagination, err := h.Repo.GetProducts(p)
+	pagination, err := h.Repo.GetProducts(p, qs.Name, qs.Subcategory, qs.Brand, qs.MinPrice, qs.MaxPrice, qs.Status)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",

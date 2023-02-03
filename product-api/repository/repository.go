@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"richard-here/soluix/product-api/database"
 
 	localmodel "richard-here/soluix/product-api/model/local"
@@ -14,10 +15,36 @@ func CreateRepository(db database.DBInstance) Repo {
 	return Repo{Db: db}
 }
 
-func (r *Repo) GetProducts(pagination Pagination) (*Pagination, error) {
+func (r *Repo) GetProducts(pagination Pagination, name, subcategory, brand string, minPrice, maxPrice int, status string) (*Pagination, error) {
 	var products []localmodel.Product
 
-	r.Db.Db.Scopes(paginate(products, &pagination, r.Db.Db)).Find(&products)
+	tx := r.Db.Db
+	if name != "" {
+		tx = tx.Where("LOWER(name) LIKE LOWER(?)", fmt.Sprintf("%%%s%%", name))
+	}
+	if subcategory != "" {
+		tx = tx.Where("LOWER(subcategory) LIKE LOWER(?)", fmt.Sprintf("%%%s%%", subcategory))
+	}
+	if brand != "" {
+		tx = tx.Where("LOWER(brand) LIKE LOWER(?)", fmt.Sprintf("%%%s%%", brand))
+	}
+	if minPrice != 0 {
+		tx = tx.Where("retail_price >= ?", minPrice)
+	}
+	if maxPrice != 0 {
+		tx = tx.Where("retail_price <= ?", maxPrice)
+	}
+	if status != "" {
+		if status == "1" {
+			tx = tx.Where("status = true")
+		} else if status == "0" {
+			tx = tx.Where("status = false")
+		}
+	}
+	err := tx.Scopes(paginate(products, &pagination, tx)).Find(&products).Error
+	if err != nil {
+		return nil, err
+	}
 	pagination.Rows = products
 	return &pagination, nil
 }
